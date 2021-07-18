@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { auth, dataBase } from "../firebase";
-import SendMessages from "./sendMessages";
-import SignOut from "./signOut";
+import React, { useState, useEffect, useRef } from "react";
+import { dataBase, auth } from "../firebase";
+import SendMessage from "./SendMessage";
+import SignOut from "./SignOut";
 
-const Chat = () => {
+function Chat() {
+  const scroll = useRef();
   const [messages, setMessages] = useState([]);
   useEffect(() => {
     dataBase
@@ -11,30 +12,31 @@ const Chat = () => {
       .orderBy("createdAt")
       .limit(50)
       .onSnapshot((snapshot) => {
-        setMessages(snapshot.docs.map((docs) => docs.data()));
+        setMessages(snapshot.docs.map((doc) => doc.data()));
       });
   }, []);
   return (
     <div>
       <SignOut />
-      <div className="messges">
-        {messages.map(({ id, text, photoURl, uid }) => (
+      <div className="msgs">
+        {messages.map(({ id, text, photoURL, uid }) => (
           <div>
             <div
               key={id}
-              className={`messg ${
-                uid === auth.currentUser.uid ? "sent" : "reseve"
+              className={`msg ${
+                uid === auth.currentUser.uid ? "sent" : "received"
               }`}
             >
-              <img src={photoURl} alt="" />
+              <img src={photoURL} alt="" />
               <p>{text}</p>
             </div>
           </div>
         ))}
       </div>
-      <SendMessages />
+      <SendMessage scroll={scroll} />
+      <div ref={scroll}></div>
     </div>
   );
-};
+}
 
 export default Chat;
